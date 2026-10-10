@@ -24,7 +24,7 @@ def setup_quality_fn(y: np.ndarray, p: np.ndarray, residual: str) -> Callable[[n
         raise ValueError("'y' and 'p' array size mismatch")
 
     # Calculate the residual given specified type
-    r = _calculate_residual(y, p, residual)
+    r = calculate_residual(y, p, residual)
 
     # Calculate global residual mean and variance
     r_g_mean = r.mean()
@@ -57,7 +57,7 @@ def setup_quality_fn(y: np.ndarray, p: np.ndarray, residual: str) -> Callable[[n
 
     return quality_fn
 
-def _calculate_residual(y: np.ndarray, p: np.ndarray, residual: str) -> np.ndarray:
+def calculate_residual(y: np.ndarray, p: np.ndarray, residual: str) -> np.ndarray:
     """ Calculates the array of residuals given the true outcomes and predicted
         outcome probabilities.
 
