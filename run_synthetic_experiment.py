@@ -11,10 +11,10 @@ Jaccard = 1.0 means perfect recovery. Jaccard = 0.0 means no overlap at all
 """
 
 import numpy as np
-from functools import partial
+import pandas as pd
 
 from synthetic_data import generate_synthetic_dataset
-from quality_measures import q_calib, q_brier
+from quality_measures import setup_quality_fn
 from beam_search import beam_search
 
 
@@ -30,33 +30,43 @@ def main():
     p_hat = df["p_hat"].values
     true_planted_mask = df["is_planted"].values.astype(bool)
     descriptor_attrs = ["x1", "x2"]  # the model is NOT allowed to see true_p or y as descriptors
+    attrs_type = pd.Series(data=["Continuous", "Continuous"])
 
     print("=" * 70)
     print("SEARCH 1: q_calib (signed residual, our proposed measure)")
-    print("=" * 70)
-    quality_fn_calib = partial(q_calib, y, p_hat)
+    print("=" * 70, '\n')
+    quality_fn_calib = setup_quality_fn(y, p_hat, 'calibration')
     results_calib = beam_search(
-        df, quality_fn_calib, descriptor_attrs,
+        df, quality_fn_calib, descriptor_attrs, attrs_type,
         depth=2, beam_width=20, top_k=5, min_subgroup_size=100,
     )
     for rank, (desc, q, n) in enumerate(results_calib, start=1):
         mask = desc.mask(df)
         jac = jaccard(mask, true_planted_mask)
-        print(f"  #{rank}  q={q:7.3f}  n={n:5d} Jaccard-vs-truth={jac:.3f}   {desc}")
+        # print(f"  #{rank}  q={q:7.3f}  n={n:5d} Jaccard-vs-truth={jac:.3f}   {desc}")
+        print(f"  #{rank}"
+              f"{'Quality':>10}: {'':>8} q ={q:7.3f}\n"
+              f"{'Subgroup size':>20}: {'':>2} n ={n:5d}\n"
+              f"{'Jaccard-vs-truth':>23}:{'':>0} {jac:.3f}\n"
+              f"{'Description':>18}: {'':>4} {desc}\n")
 
     print()
     print("=" * 70)
     print("SEARCH 2: q_brier (squared residual, EMRM's original choice)")
-    print("=" * 70)
-    quality_fn_brier = partial(q_brier, y, p_hat)
+    print("=" * 70, '\n')
+    quality_fn_brier = setup_quality_fn(y, p_hat, 'squared')
     results_brier = beam_search(
-        df, quality_fn_brier, descriptor_attrs,
+        df, quality_fn_brier, descriptor_attrs, attrs_type,
         depth=2, beam_width=20, top_k=5, min_subgroup_size=100,
     )
     for rank, (desc, q, n) in enumerate(results_brier, start=1):
         mask = desc.mask(df)
         jac = jaccard(mask, true_planted_mask)
-        print(f"  #{rank}  q={q:7.3f}  n={n:5d}  Jaccard-vs-truth={jac:.3f}   {desc}")
+        print(f"  #{rank}"
+              f"{'Quality':>10}: {'':>8} q ={q:7.3f}\n"
+              f"{'Subgroup size':>20}: {'':>2} n ={n:5d}\n"
+              f"{'Jaccard-vs-truth':>23}:{'':>0} {jac:.3f}\n"
+              f"{'Description':>18}: {'':>4} {desc}\n")
 
     print()
     print("*" * 70)
