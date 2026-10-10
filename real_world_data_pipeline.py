@@ -41,11 +41,12 @@ def load_uci_binary(dataset_id: int):
  
     data = fetch_ucirepo(id=dataset_id)
     X = data.data.features.copy()
+    X_type = data.variables.type.iloc[:-1]
     y_raw = data.data.targets.copy().iloc[:, 0]
  
     # Drop rows with missing values for simplicity, put this in the
     # Experimental Setup section as a stated preprocessing decision, same
-    #as Branderhorst's thesis does for its own missing-data handling
+    # as Branderhorst's thesis does for its own missing-data handling
     mask = X.notna().all(axis=1) & y_raw.notna()
     X, y_raw = X[mask].reset_index(drop=True), y_raw[mask].reset_index(drop=True)
  
@@ -54,13 +55,13 @@ def load_uci_binary(dataset_id: int):
         if X[col].dtype == object or X[col].dtype.name == "category":
             X[col] = LabelEncoder().fit_transform(X[col].astype(str))
  
-    #binarise target: adjust this rule per dataset
+    # binarise target: adjust this rule per dataset
     if y_raw.nunique() > 2:
         y = (y_raw > 0).astype(int)
     else:
         y = LabelEncoder().fit_transform(y_raw)
  
-    return X.astype(float), np.asarray(y)
+    return X.astype(float), np.asarray(y), X_type
  
  
 def get_out_of_fold_predictions(X: pd.DataFrame, y: np.ndarray, n_folds: int = 5) -> np.ndarray:
@@ -78,7 +79,7 @@ def get_out_of_fold_predictions(X: pd.DataFrame, y: np.ndarray, n_folds: int = 5
  
 def run_one_dataset(name: str, dataset_id: int, min_subgroup_frac: float = 0.05, depth: int = 2, top_k: int = 3):
     print(f"\n{'*'*70}\n{name}\n{'*'*70}")
-    X, y = load_uci_binary(dataset_id)
+    X, y, X_type = load_uci_binary(dataset_id)
     p_hat = get_out_of_fold_predictions(X, y)
     min_size = max(10, int(min_subgroup_frac * len(X)))
  
@@ -88,7 +89,7 @@ def run_one_dataset(name: str, dataset_id: int, min_subgroup_frac: float = 0.05,
     ]:
         print(f"\n--- {label} ---  (min subgroup size = {min_size})")
         results = beam_search(
-            X, quality_fn, list(X.columns),
+            X, quality_fn, list(X.columns), X_type,
             depth=depth, beam_width=20, top_k=top_k, min_subgroup_size=min_size,
         )
         r_all = r_fn(y, p_hat)
