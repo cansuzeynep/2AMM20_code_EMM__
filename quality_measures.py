@@ -29,6 +29,8 @@ def setup_quality_fn(y: np.ndarray, p: np.ndarray, residual: str) -> Callable[[n
     # Calculate global residual mean and variance
     r_g_mean = r.mean()
     r_g_var = np.var(r)
+    if r_g_var == 0:
+        raise ValueError("Global residual variance is zero; quality is undefined.")
 
     # Create inner function
     def quality_fn(mask: np.ndarray) -> float:
@@ -47,6 +49,8 @@ def setup_quality_fn(y: np.ndarray, p: np.ndarray, residual: str) -> Callable[[n
 
         # Calculate subgroup residual mean
         mask_sum = mask.sum()
+        if mask_sum == 0:
+            raise ValueError("Cannot calculate quality for an empty subgroup.")
         r_s = r * mask
         r_s_mean = r_s.sum() / mask_sum
 

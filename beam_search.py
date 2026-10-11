@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 from typing import Callable, List
 import numpy as np
 import pandas as pd
-from numpy.ma.core import size
+#from numpy.ma.core import size
 
 
 @dataclass

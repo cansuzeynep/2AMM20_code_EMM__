@@ -39,7 +39,13 @@ def load_uci_binary(dataset_id: int):
 
     data = fetch_ucirepo(id=dataset_id)
     X = data.data.features.copy()
-    X_type = data.variables.type[data.variables['name'].isin(X.columns)].reset_index(drop=True)
+    type_by_name = dict(zip(data.variables["name"], data.variables["type"]))
+    missing_types = [column for column in X.columns if column not in type_by_name]
+    if missing_types:
+        raise ValueError(f"Missing metadata for features: {missing_types}")
+    X_type = pd.Series(
+        [type_by_name[column] for column in X.columns]
+    ).replace({"Binary": "Categorical"})
     y_raw = data.data.targets.copy().iloc[:, 0]
 
     # Drop rows with missing values for simplicity, put this in the
