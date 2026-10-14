@@ -35,7 +35,7 @@ def main():
     print("=" * 70)
     print("SEARCH 1: q_calib (signed residual, our proposed measure)")
     print("=" * 70, '\n')
-    quality_fn_calib = setup_quality_fn(y, p_hat, 'calibration')
+    quality_fn_calib, _ = setup_quality_fn(y, p_hat, 'calibration')
     results_calib = beam_search(
         df, quality_fn_calib, descriptor_attrs, attrs_type,
         depth=2, beam_width=20, top_k=5, min_subgroup_size=100,
@@ -54,7 +54,7 @@ def main():
     print("=" * 70)
     print("SEARCH 2: q_brier (squared residual, EMRM's original choice)")
     print("=" * 70, '\n')
-    quality_fn_brier = setup_quality_fn(y, p_hat, 'squared')
+    quality_fn_brier, _ = setup_quality_fn(y, p_hat, 'squared')
     results_brier = beam_search(
         df, quality_fn_brier, descriptor_attrs, attrs_type,
         depth=2, beam_width=20, top_k=5, min_subgroup_size=100,
