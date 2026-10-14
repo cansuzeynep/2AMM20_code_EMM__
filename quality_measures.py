@@ -1,7 +1,7 @@
-from typing import Callable
+from typing import Callable, Tuple
 import numpy as np
 
-def setup_quality_fn(y: np.ndarray, p: np.ndarray, residual: str) -> Callable[[np.ndarray], float]:
+def setup_quality_fn(y: np.ndarray, p: np.ndarray, residual: str) -> Tuple[Callable[[np.ndarray], float], float]:
     """ Closure function: Sets up the static environment for the quality_fn.
 
     Calculates the residuals of the full dataset true outcomes and predicted
@@ -59,7 +59,7 @@ def setup_quality_fn(y: np.ndarray, p: np.ndarray, residual: str) -> Callable[[n
 
         return q_res
 
-    return quality_fn
+    return quality_fn, r_g_mean
 
 def calculate_residual(y: np.ndarray, p: np.ndarray, residual: str) -> np.ndarray:
     """ Calculates the array of residuals given the true outcomes and predicted
