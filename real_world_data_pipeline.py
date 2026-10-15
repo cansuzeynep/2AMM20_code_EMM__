@@ -13,9 +13,11 @@ from functools import partial
 
 import numpy as np
 import pandas as pd
+from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_predict
-from sklearn.preprocessing import LabelEncoder
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from quality_measures import setup_quality_fn, calculate_residual
 from beam_search import beam_search
 
@@ -71,16 +73,23 @@ def load_uci_binary(dataset_id: int):
 def get_out_of_fold_predictions(
         X: pd.DataFrame,
         y: np.ndarray,
+    categorical_attrs: list[str],
         n_folds: int = 5
 ) -> np.ndarray:
     """
     Random Forest predicted probabilities via cross_val_predict, i.e.
     every prediction is made by a model that did NOT see that record during
-    training. This is the methodological upgrade over EMRM's in-sample
-    residuals discussed in the Methods section, a "high-residual subgroup"
-    here reflects genuine generalisation failure, not memorisation
+    training. Subgroup selection still uses these same out-of-fold predictions,
+    so selected subgroups are exploratory and require independent validation.
     """
-    clf = RandomForestClassifier(n_estimators=200, random_state=42)
+    feature_encoder = ColumnTransformer(
+        [("categorical", OneHotEncoder(handle_unknown="ignore"), categorical_attrs)],
+        remainder="passthrough",
+    )
+    clf = make_pipeline(
+        feature_encoder,
+        RandomForestClassifier(n_estimators=200, random_state=42),
+    )
     proba = cross_val_predict(clf, X, y, cv=n_folds, method="predict_proba")
     return proba[:, 1]  # P(y=1)
 
@@ -105,7 +114,10 @@ def run_one_dataset(
     """
     print(f"\n{'*' * 70}\n{name:^65}\n{'*' * 70}\n")
     X, y, X_type = load_uci_binary(dataset_id)
-    p_hat = get_out_of_fold_predictions(X, y)
+    categorical_attrs = [
+        X.columns[i] for i in np.flatnonzero(X_type.to_numpy() == "Categorical")
+    ]
+    p_hat = get_out_of_fold_predictions(X, y, categorical_attrs)
     min_size = max(10, int(min_subgroup_frac * len(X)))
 
     for residual in ["calibration", "squared"]:
