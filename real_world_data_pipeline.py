@@ -122,7 +122,8 @@ def run_one_dataset(
 
     for residual in ["calibration", "squared"]:
         print(f"  --- {residual} ---  (min subgroup size = {min_size})\n")
-        quality_fn = setup_quality_fn(y, p_hat, residual)
+        quality_fn, r_g_mean = setup_quality_fn(y, p_hat, residual)
+        print(f"{'Global residual':>22} {'':>1} {r_g_mean}\n")
         results = beam_search(
             X, quality_fn, list(X.columns), X_type,
             depth=depth, beam_width=20, top_k=top_k, min_subgroup_size=min_size,
