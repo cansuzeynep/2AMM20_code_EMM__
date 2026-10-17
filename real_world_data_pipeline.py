@@ -63,7 +63,9 @@ def load_uci_binary(dataset_id: int):
     X, y_raw = X[mask].reset_index(drop=True), y_raw[mask].reset_index(drop=True)
 
     # Print raw dataset size
-    print(f"{'Preprocessed dataset size:':>30}{'':>1}{y_raw.shape[0]}\n")
+    print(f"{'Preprocessed dataset size:':>32}{'':>1}{y_raw.shape[0]}\n")
+    # Print preprocessed target labels
+    print(f"{'Raw target labels:':>24}{'':>1}{np.unique(y_raw.to_numpy())} ({y_raw.to_numpy()[0]})")
 
     # Encode any categorical columns numerically
     for col in X.columns:
@@ -75,6 +77,13 @@ def load_uci_binary(dataset_id: int):
         y = (y_raw > 0).astype(int)
     else:
         y = LabelEncoder().fit_transform(y_raw)
+
+    # Print preprocessed target labels
+    y_unique, y_unique_c = np.unique(y, return_counts=True)
+    print(f"{'Preprocessed target labels:':>33}{'':>1}{y_unique} ({y[0]})\n")
+
+    print(f"{'Percentages:':>18}{'':>1}{y_unique[0]}: {y_unique_c[0]} ({(y_unique_c[0]/y.size)*100:0.2f}%),"
+          f" {y_unique[1]}: {y_unique_c[1]} ({(y_unique_c[1]/y.size)*100:0.2f}%)\n")
 
     return X.astype(float), np.asarray(y), X_type
 
