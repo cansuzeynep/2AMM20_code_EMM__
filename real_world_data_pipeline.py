@@ -25,8 +25,10 @@ from beam_search import beam_search
 DATASETS = {
     "heart_disease": 45,  # Cleveland Heart Disease, around 303 records, binary
     "breast_cancer": 17,  # Wisconsin Diagnostic, 569 records, binary
-    # "diabetes_130": 296,    # Large-scale
-    #                           beam search at around 100k rows will be much slower.
+    "ionosphere": 52,  # Ionosphere, 351 records
+    "early_diabetes_risk": 529,  # Early Stage Diabetes Risk Prediction, 520 records
+    "statlog_german_credit": 144,  # Statlog (German Credit Data), 1000 records
+    "voting": 105
 }
 
 
@@ -58,7 +60,7 @@ def load_uci_binary(dataset_id: int):
 
     # Encode any categorical columns numerically
     for col in X.columns:
-        if X[col].dtype == object or X[col].dtype.name == "category":
+        if X[col].dtype == object or X[col].dtype.name == "category" or X[col].dtype == "str":
             X[col] = LabelEncoder().fit_transform(X[col].astype(str))
 
     # binarise target: adjust this rule per dataset
