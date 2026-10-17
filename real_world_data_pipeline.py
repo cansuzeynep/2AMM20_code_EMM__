@@ -28,7 +28,8 @@ DATASETS = {
     "ionosphere": 52,  # Ionosphere, 351 records
     "early_diabetes_risk": 529,  # Early Stage Diabetes Risk Prediction, 520 records
     "statlog_german_credit": 144,  # Statlog (German Credit Data), 1000 records
-    "voting": 105
+    "voting": 105,
+    "mushroom": 73
 }
 
 
@@ -52,11 +53,17 @@ def load_uci_binary(dataset_id: int):
     ).replace({"Binary": "Categorical"})
     y_raw = data.data.targets.copy().iloc[:, 0]
 
+    # Print raw dataset size
+    print(f"{'Raw dataset size:':>23}{'':>8}{y_raw.shape[0]}")
+
     # Drop rows with missing values for simplicity, put this in the
     # Experimental Setup section as a stated preprocessing decision, same
     # as Branderhorst's thesis does for its own missing-data handling
     mask = X.notna().all(axis=1) & y_raw.notna()
     X, y_raw = X[mask].reset_index(drop=True), y_raw[mask].reset_index(drop=True)
+
+    # Print raw dataset size
+    print(f"{'Preprocessed dataset size:':>30}{'':>1}{y_raw.shape[0]}\n")
 
     # Encode any categorical columns numerically
     for col in X.columns:
