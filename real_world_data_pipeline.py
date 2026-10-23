@@ -25,9 +25,6 @@ DATASETS = {
     "breast_cancer": 17,  # Wisconsin Diagnostic, 569 records, binary
     "ionosphere": 52,  # Ionosphere, 351 records
     "early_diabetes_risk": 529,  # Early Stage Diabetes Risk Prediction, 520 records
-    "statlog_german_credit": 144,  # Statlog (German Credit Data), 1000 records
-    "voting": 105,
-    "mushroom": 73
 }
 
 
